@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.freedesktop.NativeMessagingProxy
+Exec=@libexecdir@/xdg-native-messaging-proxy
+SystemdService=xdg-native-messaging-proxy.service
+AssumedAppArmorLabel=unconfined

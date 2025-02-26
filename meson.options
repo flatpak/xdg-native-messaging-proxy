@@ -1,0 +1,8 @@
+option('dbus-service-dir',
+       type: 'string',
+       value: '',
+       description: 'directory for dbus service files (default: PREFIX/share/dbus-1/services)')
+option('systemd-user-unit-dir',
+       type: 'string',
+       value: '',
+       description: 'directory for systemd user service files (default: PREFIX/lib/systemd/user)')

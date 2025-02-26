@@ -1,0 +1,9 @@
+{
+  "name": "org.example.echo",
+  "description": "Echo",
+  "path": "echo.sh",
+  "type": "stdio",
+  "allowed_extensions": [
+    "some-extension@example.org"
+  ]
+}

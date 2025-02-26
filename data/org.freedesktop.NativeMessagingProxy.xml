@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<!--
+ Copyright © 2025 Red Hat, Inc
+
+ SPDX-License-Identifier: LGPL-2.1-or-later
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library. If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <!--
+      org.freedesktop.NativeMessagingProxy:
+      @short_description: The Native Messaging Proxy
+
+      Provides a proxy for the native messaging functionality for web browser
+      extensions. Useful when the application has a limited view of the host.
+
+      This documentation describes version 1 of this interface.
+  -->
+  <interface name="org.freedesktop.NativeMessagingProxy">
+    <!--
+        GetManifest:
+        @messaging_host_name: The name of the native messaging host
+        @mode: The mode to operate in: either mozilla or chromium.
+        @options: unused
+        @manifest: The manifest of the specified native messaging host
+
+        Gets the manifest that matches the native messaging host name.
+    -->
+    <method name="GetManifest">
+      <arg type="s" name="messaging_host_name" direction="in"/>
+      <arg type="s" name="mode" direction="in"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QVariantMap"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="s" name="manifest" direction="out"/>
+    </method>
+
+    <!--
+        Start:
+        @messaging_host_name: The name of the native messaging host
+        @extension_or_origin: The extension or origin which to Start the native
+        messaging host for
+        @mode: The mode to operate in: either mozilla or chromium.
+        @options: unused
+        @stdin: A pipe fd for the native messaging hosts stdin
+        @stdout: A pipe fd for the native messaging hosts stdout
+        @stderr: A pipe fd for the native messaging hosts stderr
+        @handle: A handle representing the started native messaging host
+
+        Starts a native messaging host and sets up the pipes.
+    -->
+    <method name="Start">
+      <annotation name="org.gtk.GDBus.C.UnixFD" value="true"/>
+      <arg type="s" name="messaging_host_name" direction="in"/>
+      <arg type="s" name="extension_or_origin" direction="in"/>
+      <arg type="s" name="mode" direction="in"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QVariantMap"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+      <arg type="h" name="stdin" direction="out"/>
+      <arg type="h" name="stdout" direction="out"/>
+      <arg type="h" name="stderr" direction="out"/>
+      <arg type="o" name="handle" direction="out"/>
+    </method>
+
+    <!--
+        Close:
+        @handle: A handle retrieved from calling Start
+        @options: unused
+
+        Kills the native messaging host
+    -->
+    <method name="Close">
+      <arg type="o" name="handle" direction="in"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QVariantMap"/>
+      <arg type="a{sv}" name="options" direction="in"/>
+    </method>
+
+    <!--
+        Closed:
+        @handle: A handle retrieved from calling Start
+        @options: unused
+
+        Emitted when the native messaging host died
+    -->
+    <signal name="Closed">
+      <arg type="o" name="handle" direction="out"/>
+      <arg type="a{sv}" name="options" direction="out"/>
+    </signal>
+
+    <property name="version" type="u" access="read"/>
+  </interface>
+</node>

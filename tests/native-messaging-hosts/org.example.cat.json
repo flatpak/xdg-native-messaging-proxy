@@ -1,0 +1,9 @@
+{
+  "name": "org.example.cat",
+  "description": "Cat",
+  "path": "/usr/bin/cat",
+  "type": "stdio",
+  "allowed_extensions": [
+    "some-extension@example.org"
+  ]
+}

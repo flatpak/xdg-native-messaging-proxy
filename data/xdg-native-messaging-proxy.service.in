@@ -1,0 +1,9 @@
+[Unit]
+Description=Native messaging proxy service
+PartOf=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=org.freedesktop.NativeMessagingProxy
+ExecStart=@libexecdir@/xdg-native-messaging-proxy
+Slice=session.slice
