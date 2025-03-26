@@ -4,6 +4,7 @@ pytest_args = [
   meson.current_source_dir(),
   '--verbose',
   '--log-level=DEBUG',
+  '-s',
 ]
 
 pytest_env = environment()
