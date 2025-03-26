@@ -15,6 +15,9 @@ RUN apt install -y --no-install-recommends \
     ca-certificates \
     git \
     libclang-rt-18-dev \
+    # python tools
+    python3-pip \
+    python-is-python3 \
     # deps
     libglib2.0-dev \
     libjson-glib-dev \
@@ -22,9 +25,7 @@ RUN apt install -y --no-install-recommends \
     python3-gi \
     python3-pytest \
     python3-dbusmock \
-    python3-dbus \
-    # pip
-    python3-pip
+    python3-dbus
 
 # Install pre-commit
 RUN pip install --user --break-system-packages pre-commit
