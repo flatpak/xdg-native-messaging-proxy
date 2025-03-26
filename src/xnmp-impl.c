@@ -340,9 +340,9 @@ xnmp_impl_handle_get_manifest (XnmpImplGetManifestData *data)
 
 static GSubprocess *
 subprocess_new_with_pipes (const char * const  *argv,
+                           int                 *stdin_fd_out,
                            int                 *stdout_fd_out,
                            int                 *stderr_fd_out,
-                           int                 *stdin_fd_out,
                            GError             **error)
 {
   g_autoptr (GSubprocess) subp = NULL;
@@ -357,16 +357,16 @@ subprocess_new_with_pipes (const char * const  *argv,
   if (!subp)
     return NULL;
 
+  stream_stdin = g_subprocess_get_stdin_pipe (subp);
   stream_stdout = g_subprocess_get_stdout_pipe (subp);
   stream_stderr = g_subprocess_get_stderr_pipe (subp);
-  stream_stdin = g_subprocess_get_stdin_pipe (subp);
 
+  *stdin_fd_out =
+    g_unix_output_stream_get_fd (G_UNIX_OUTPUT_STREAM (stream_stdin));
   *stdout_fd_out =
     g_unix_input_stream_get_fd (G_UNIX_INPUT_STREAM (stream_stdout));
   *stderr_fd_out =
     g_unix_input_stream_get_fd (G_UNIX_INPUT_STREAM (stream_stderr));
-  *stdin_fd_out =
-    g_unix_output_stream_get_fd (G_UNIX_OUTPUT_STREAM (stream_stdin));
 
   return g_steal_pointer (&subp);
 }
@@ -441,9 +441,8 @@ xnmp_impl_handle_start (XnmpImplStartData *data)
   size_t i = 0;
   gboolean success;
   GSubprocess *subp;
-  int stdout_fd, stderr_fd, stdin_fd;
+  int subp_pipes[3];
   g_autoptr(GUnixFDList) fd_list = NULL;
-  int stdout_fd_id, stderr_fd_id, stdin_fd_id;
   g_auto(GVariantBuilder) closed_options_builder =
     G_VARIANT_BUILDER_INIT (G_VARIANT_TYPE_VARDICT);
   const char *handle;
@@ -487,9 +486,9 @@ xnmp_impl_handle_start (XnmpImplStartData *data)
   g_debug ("Spawning native messaging host %s\n", argv[0]);
 
   subp = subprocess_new_with_pipes ((const char * const *)argv,
-                                    &stdout_fd,
-                                    &stderr_fd,
-                                    &stdin_fd,
+                                    &subp_pipes[0],
+                                    &subp_pipes[1],
+                                    &subp_pipes[2],
                                     &error);
   if (!subp)
     {
@@ -497,27 +496,16 @@ xnmp_impl_handle_start (XnmpImplStartData *data)
       return NULL;
     }
 
-  fd_list = g_unix_fd_list_new ();
-  stdout_fd_id = g_unix_fd_list_append (fd_list, stdout_fd, NULL);
-  stderr_fd_id = g_unix_fd_list_append (fd_list, stderr_fd, NULL);
-  stdin_fd_id = g_unix_fd_list_append (fd_list, stdin_fd, NULL);
-
-  if (stdout_fd_id == -1 || stderr_fd_id == -1 || stdin_fd_id == -1)
-    {
-      g_dbus_method_invocation_return_error (invocation,
-                                             G_DBUS_ERROR, G_DBUS_ERROR_FAILED,
-                                             "Setting up pipes failed");
-      return NULL;
-    }
-
   register_running (impl, &handle, &cancellable);
 
+  fd_list = g_unix_fd_list_new_from_array ((const int *)&subp_pipes,
+                                           G_N_ELEMENTS (subp_pipes));
   xnmp_dbus_native_messaging_proxy_complete_start (impl->dbus_object,
                                                    invocation,
                                                    fd_list,
-                                                   g_variant_new_handle (stdin_fd_id),
-                                                   g_variant_new_handle (stdout_fd_id),
-                                                   g_variant_new_handle (stderr_fd_id),
+                                                   g_variant_new_handle (0),
+                                                   g_variant_new_handle (1),
+                                                   g_variant_new_handle (2),
                                                    handle);
 
   success = dex_await (dex_future_all_race (dex_subprocess_wait_check (subp),
