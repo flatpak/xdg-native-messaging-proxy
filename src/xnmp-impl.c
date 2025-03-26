@@ -498,8 +498,7 @@ xnmp_impl_handle_start (XnmpImplStartData *data)
 
   register_running (impl, &handle, &cancellable);
 
-  fd_list = g_unix_fd_list_new_from_array ((const int *)&subp_pipes,
-                                           G_N_ELEMENTS (subp_pipes));
+  fd_list = g_unix_fd_list_new_from_array (subp_pipes, G_N_ELEMENTS (subp_pipes));
   xnmp_dbus_native_messaging_proxy_complete_start (impl->dbus_object,
                                                    invocation,
                                                    fd_list,
