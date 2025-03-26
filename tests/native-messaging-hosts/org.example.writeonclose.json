@@ -1,0 +1,9 @@
+{
+  "name": "org.example.writeonclose",
+  "description": "Writes a file to $TMPDIR/xnmp-write-on-close when stdin gets closed",
+  "path": "write-on-close.py",
+  "type": "stdio",
+  "allowed_extensions": [
+    "some-extension@example.org"
+  ]
+}

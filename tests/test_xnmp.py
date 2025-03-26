@@ -2,6 +2,7 @@ import os
 import json
 import xnmp
 import errno
+from pathlib import Path
 
 
 class TestXnmp:
@@ -117,3 +118,21 @@ class TestXnmp:
             xnmp.wait_for(fd_closed)
         finally:
             os.close(stdin_fd)
+
+    def test_close_stdin(self, xdg_native_messaging_proxy, manifests, dbus_con):
+        iface = xnmp.get_iface(dbus_con)
+        manifest_name = "org.example.writeonclose"
+        extension = "some-extension@example.org"
+        mode = "firefox"
+
+        (stdin, stdout, stderr, handle) = iface.Start(
+            manifest_name, extension, mode, {}
+        )
+
+        fpath = Path(os.environ["TMPDIR"]) / "xnmp-write-on-close"
+        assert not fpath.exists()
+
+        stdin_fd = stdin.take()
+
+        os.close(stdin_fd)
+        xnmp.wait_for(lambda: fpath.exists())
