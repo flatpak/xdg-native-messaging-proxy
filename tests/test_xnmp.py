@@ -1,6 +1,7 @@
 import os
 import json
 import xnmp
+import errno
 
 
 class TestXnmp:
@@ -87,3 +88,31 @@ class TestXnmp:
         iface.connect_to_signal("Closed", on_closed)
 
         xnmp.wait_for(lambda: closed_received)
+
+    def test_dbus_close(self, xdg_native_messaging_proxy, manifests, dbus_con):
+        iface = xnmp.get_iface(dbus_con)
+        manifest_name = "org.example.echo"
+        extension = "some-extension@example.org"
+        mode = "firefox"
+
+        (stdin, stdout, stderr, handle) = iface.Start(
+            manifest_name, extension, mode, {}
+        )
+
+        dbus_con.close()
+
+        stdin_fd = stdin.take()
+
+        def fd_closed():
+            try:
+                msg = b"1"
+                os.write(stdin_fd, msg)
+                return False
+            except IOError as e:
+                assert e.errno == errno.EPIPE
+                return True
+
+        try:
+            xnmp.wait_for(fd_closed)
+        finally:
+            os.close(stdin_fd)
