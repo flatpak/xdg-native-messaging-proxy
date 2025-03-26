@@ -25,7 +25,9 @@ RUN apt install -y --no-install-recommends \
     python3-gi \
     python3-pytest \
     python3-dbusmock \
-    python3-dbus
+    python3-dbus \
+    # ci deps
+    jq
 
 # Install pre-commit
 RUN pip install --user --break-system-packages pre-commit
