@@ -107,10 +107,11 @@ class TestXnmp:
             try:
                 msg = b"1"
                 os.write(stdin_fd, msg)
-                return False
             except IOError as e:
-                assert e.errno == errno.EPIPE
-                return True
+                return e.errno == errno.EPIPE
+            except Exception:
+                return False
+            return False
 
         try:
             xnmp.wait_for(fd_closed)
