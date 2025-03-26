@@ -1,0 +1,31 @@
+# This Containerfile builds the image that we use in all github workflows.
+# When this file is changed, or one needs to rebuild the image for another
+# reason, bump the `IMAGE_TAG` in the container.yml workflow.
+
+FROM ubuntu:latest
+
+RUN apt update
+RUN apt upgrade -y
+
+# Install dependencies
+RUN apt install -y --no-install-recommends \
+    # build tools
+    meson \
+    gcc clang \
+    ca-certificates \
+    git \
+    libclang-rt-18-dev \
+    # deps
+    libglib2.0-dev \
+    libjson-glib-dev \
+    libdex-dev \
+    # testing deps
+    python3-gi \
+    python3-pytest \
+    python3-dbusmock \
+    python3-dbus \
+    # pip
+    python3-pip
+
+# Install pre-commit
+RUN pip install --user --break-system-packages pre-commit
