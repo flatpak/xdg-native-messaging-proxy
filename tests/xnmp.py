@@ -37,4 +37,3 @@ def get_iface(dbus_con: dbus.Bus) -> dbus.Interface:
         ),
         dbus_interface="org.freedesktop.NativeMessagingProxy",
     )
-
