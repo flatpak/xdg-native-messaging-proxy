@@ -346,8 +346,8 @@ subprocess_new_with_pipes (const char * const  *argv,
                            GError             **error)
 {
   g_autoptr (GSubprocess) subp = NULL;
-  GInputStream *stream_stdout, *stream_stderr;
-  GOutputStream *stream_stdin;
+  GUnixInputStream *stream_stdout, *stream_stderr;
+  GUnixOutputStream *stream_stdin;
 
   subp = g_subprocess_newv ((const char * const *)argv,
                             G_SUBPROCESS_FLAGS_STDIN_PIPE |
@@ -357,16 +357,21 @@ subprocess_new_with_pipes (const char * const  *argv,
   if (!subp)
     return NULL;
 
-  stream_stdin = g_subprocess_get_stdin_pipe (subp);
-  stream_stdout = g_subprocess_get_stdout_pipe (subp);
-  stream_stderr = g_subprocess_get_stderr_pipe (subp);
-
+  /* take ownership over the FDs */
+  stream_stdin = G_UNIX_OUTPUT_STREAM (g_subprocess_get_stdin_pipe (subp));
+  g_unix_output_stream_set_close_fd (stream_stdin, FALSE);
   *stdin_fd_out =
-    g_unix_output_stream_get_fd (G_UNIX_OUTPUT_STREAM (stream_stdin));
+    g_unix_output_stream_get_fd (stream_stdin);
+
+  stream_stdout = G_UNIX_INPUT_STREAM (g_subprocess_get_stdout_pipe (subp));
+  g_unix_input_stream_set_close_fd (stream_stdout, FALSE);
   *stdout_fd_out =
-    g_unix_input_stream_get_fd (G_UNIX_INPUT_STREAM (stream_stdout));
+    g_unix_input_stream_get_fd (stream_stdout);
+
+  stream_stderr = G_UNIX_INPUT_STREAM (g_subprocess_get_stderr_pipe (subp));
+  g_unix_input_stream_set_close_fd (stream_stderr, FALSE);
   *stderr_fd_out =
-    g_unix_input_stream_get_fd (G_UNIX_INPUT_STREAM (stream_stderr));
+    g_unix_input_stream_get_fd (stream_stderr);
 
   return g_steal_pointer (&subp);
 }
@@ -506,6 +511,9 @@ xnmp_impl_handle_start (XnmpImplStartData *data)
                                                    g_variant_new_handle (1),
                                                    g_variant_new_handle (2),
                                                    handle);
+
+  /* close the stdin, stdout, stderr fds, so the client owns them */
+  g_clear_object (&fd_list);
 
   success = dex_await (dex_future_all_race (dex_subprocess_wait_check (subp),
                                             dex_cancellable_new_from_cancellable (cancellable),
