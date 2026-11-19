@@ -597,8 +597,8 @@ ensure_manifest_search_paths (XnmpImpl *impl)
    */
   search_paths = g_ptr_array_new_with_free_func (g_free);
   /* Add per-user directories */
-  g_ptr_array_add (search_paths, g_build_filename (g_get_home_dir (), ".mozilla", "native-messaging-hosts", NULL));
   g_ptr_array_add (search_paths, g_build_filename (g_get_user_config_dir (), "mozilla", "native-messaging-hosts", NULL));
+  g_ptr_array_add (search_paths, g_build_filename (g_get_home_dir (), ".mozilla", "native-messaging-hosts", NULL));
   /* Add system wide directories */
   g_ptr_array_add (search_paths, g_strdup ("/usr/lib/mozilla/native-messaging-hosts"));
   g_ptr_array_add (search_paths, g_strdup ("/usr/lib64/mozilla/native-messaging-hosts"));
